@@ -1,7 +1,5 @@
 ﻿  aBehaviorController.cpp
-  aBehaviors.cpp
-  Generating Code...
-  libassignment5.vcxproj -> D:\MyHomeWork\HW9_BehavioralAnimation\HW9 - AnimationToolkit - 2017\libsrc\animation\..\..\lib\libassignment5d.lib
+  libassignment5.vcxproj -> D:\CIS562\Behavior\HW9 - AnimationToolkit - 2017\libsrc\animation\..\..\lib\libassignment5d.lib
   aActor.h
   aBehaviorController.h
   aBehaviors.h

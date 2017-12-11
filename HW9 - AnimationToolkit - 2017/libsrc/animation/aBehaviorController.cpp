@@ -163,16 +163,26 @@ void BehaviorController::control(double deltaT)
 		// TODO: insert your code here to compute m_force and m_torque
 
 
+		// Time constant : 1 / Kv, 4 / Kv = 0.4s, Kv = 10.0 s^-1
+		float Kv = 10.0f;
+
+		vec3 m_forceGlobal = BehaviorController::gMass * Kv * (m_Vdesired - m_Vel0);
+		float theta = this->getOrientation()[_Y] - 0.5 * M_PI;
+		float cosT = std::cos(theta);
+		float sinT = std::sin(theta);
+		mat3 world2Body = mat3(vec3(cosT, 0.0, sinT), vec3(0.0, 1.0, 0.0), vec3(-sinT, 0.0, cosT));
 
 
+		// Natural freq squared: 0.25f, giving natural freq two possible solutions
+		// Since we want no oscillation or overshoot, only the positive one is valid.
+		float Kp = 0.5f;
 
+		//m_state[ORI] = atan2(dir[_Z], dir[_X]);
+		this->m_thetad = atan2(m_Vdesired[_Z], m_Vdesired[_X]);
+		float errTheta = m_thetad - this->getOrientation()[_Y];
 
-
-
-
-
-
-
+		float torqueY = BehaviorController::gInertia * (Kp * errTheta - Kv * m_AVelB[_Y]);
+		this->m_torque = vec3(0.0, torqueY, 0.0);
 
 		// when agent desired agent velocity and actual velocity < 2.0 then stop moving
 		if (m_vd < 2.0 &&  m_state[VEL][_Z] < 2.0)
@@ -212,10 +222,27 @@ void BehaviorController::computeDynamics(vector<vec3>& state, vector<vec3>& cont
 	// Compute the stateDot vector given the values of the current state vector and control input vector
 	// TODO: add your code here
 
+	vec3 velocity = state[VEL];
+	vec3 angularV = state[AVEL];
 
+	velocity += deltaT * stateDot[VEL];
+	angularV += deltaT * stateDot[AVEL];
 
+	stateDot[POS] = velocity;
+	stateDot[ORI] = angularV;
 
+	float theta = 0.5 * M_PI - stateDot[ORI][_Y];
+	float cosT = std::cos(theta);
+	float sinT = std::sin(theta);
+	mat3 body2World = mat3(vec3(cosT, 0.0f, sinT), vec3(0.0f, 1.0f, 0.0f), vec3(-sinT, 0.0f, cosT));
+	vec3 forceInWorld = body2World * force;
+	vec3 torqueInworld = body2World * torque;
 
+	vec3 acceleration = forceInWorld / BehaviorController::gMass;
+	vec3 angularAcceleration = torqueInworld / BehaviorController::gInertia;
+
+	stateDot[VEL] = acceleration;
+	stateDot[AVEL] = angularAcceleration;
 }
 
 void BehaviorController::updateState(float deltaT, int integratorType)
@@ -224,13 +251,20 @@ void BehaviorController::updateState(float deltaT, int integratorType)
 	//  this should be similar to what you implemented in the particle system assignment
 
 	// TODO: add your code here
-	
-
-
-
-
-
-
+	switch (integratorType)
+	{
+	case 0:
+		for (unsigned i = POS; i <= AVEL; ++i)
+		{
+			m_state[i] += deltaT * m_stateDot[i];
+		}
+		break;
+	case 1:
+		m_state[POS] += deltaT * (m_stateDot[POS] + 0.5f * deltaT * m_stateDot[VEL]);
+		m_state[ORI] += deltaT * (m_stateDot[ORI] + 0.5f * deltaT * m_stateDot[AVEL]);
+		m_state[VEL] += deltaT * m_stateDot[VEL];
+		m_state[AVEL] += deltaT * m_stateDot[AVEL];
+	}
 
 	//  given the new values in m_state, these are the new component state values 
 	m_Pos0 = m_state[POS];
@@ -241,11 +275,22 @@ void BehaviorController::updateState(float deltaT, int integratorType)
 	//  Perform validation check to make sure all values are within MAX values
 	// TODO: add your code here
 
+	if (m_VelB.Length() > BehaviorController::gMaxSpeed)
+	{
 
+	}
+	if (m_AVelB.Length() > BehaviorController::gMaxAngularSpeed)
+	{
 
+	}
+	if (m_force.Length() > BehaviorController::gMaxForce)
+	{
 
+	}
+	if (m_force.Length() > BehaviorController::gMaxTorque)
+	{
 
-
+	}
 
 
 	// update the guide orientation
