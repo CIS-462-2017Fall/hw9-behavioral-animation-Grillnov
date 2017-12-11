@@ -166,7 +166,7 @@ void BehaviorController::control(double deltaT)
 
 		// Time constant : 1 / Kv, 4 / Kv = 0.4s, Kv = 10.0 s^-1
 		double Kv = 10.0;
-		double bodyForceZ = Kv * (this->m_vd - this->m_VelB[_Z]);
+		double bodyForceZ = BehaviorController::gMass * Kv * (this->m_vd - this->m_VelB[_Z]);
 		this->m_force = vec3(0.0, 0.0, bodyForceZ);
 
 		// Settling time : 0.25s
@@ -175,7 +175,8 @@ void BehaviorController::control(double deltaT)
 		
 		//m_state[ORI] = atan2(dir[_Z], dir[_X]);
 		this->m_thetad = atan2(m_Vdesired[_Z], m_Vdesired[_X]);
-		double errTheta = m_thetad - this->getOrientation()[_Y];
+		double thetan = this->getOrientation()[_Y];
+		double errTheta = m_thetad - thetan;
 
 		ClampAngle(errTheta);
 
@@ -220,7 +221,7 @@ void BehaviorController::computeDynamics(vector<vec3>& state, vector<vec3>& cont
 	// Compute the stateDot vector given the values of the current state vector and control input vector
 	// TODO: add your code here
 
-	float thetaWrtY = 0.5 * M_PI - stateDot[ORI][_Y];
+	float thetaWrtY = 0.5 * M_PI - state[ORI][_Y];
 	float cosT = std::cos(thetaWrtY);
 	float sinT = std::sin(thetaWrtY);
 	mat3 body2World = mat3(vec3(cosT, 0.0f, sinT), vec3(0.0f, 1.0f, 0.0f), vec3(-sinT, 0.0f, cosT));
