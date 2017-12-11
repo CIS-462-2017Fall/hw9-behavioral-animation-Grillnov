@@ -162,24 +162,22 @@ void BehaviorController::control(double deltaT)
 
 		// TODO: insert your code here to compute m_force and m_torque
 
+		this->m_vd = m_Vdesired.Length();
 
 		// Time constant : 1 / Kv, 4 / Kv = 0.4s, Kv = 10.0 s^-1
-		float Kv = 10.0f;
+		double Kv = 10.0;
+		double bodyForceZ = Kv * (this->m_vd - this->m_VelB[_Z]);
+		this->m_force = vec3(0.0, 0.0, bodyForceZ);
 
-		vec3 m_forceGlobal = BehaviorController::gMass * Kv * (m_Vdesired - m_Vel0);
-		float theta = this->getOrientation()[_Y] - 0.5 * M_PI;
-		float cosT = std::cos(theta);
-		float sinT = std::sin(theta);
-		mat3 world2Body = mat3(vec3(cosT, 0.0, sinT), vec3(0.0, 1.0, 0.0), vec3(-sinT, 0.0, cosT));
-
-
-		// Natural freq squared: 0.25f, giving natural freq two possible solutions
-		// Since we want no oscillation or overshoot, only the positive one is valid.
-		float Kp = 0.5f;
-
+		// Settling time : 0.25s
+		Kv = 32.0;
+		double Kp = 256.0;
+		
 		//m_state[ORI] = atan2(dir[_Z], dir[_X]);
 		this->m_thetad = atan2(m_Vdesired[_Z], m_Vdesired[_X]);
-		float errTheta = m_thetad - this->getOrientation()[_Y];
+		double errTheta = m_thetad - this->getOrientation()[_Y];
+
+		ClampAngle(errTheta);
 
 		float torqueY = BehaviorController::gInertia * (Kp * errTheta - Kv * m_AVelB[_Y]);
 		this->m_torque = vec3(0.0, torqueY, 0.0);
@@ -222,26 +220,19 @@ void BehaviorController::computeDynamics(vector<vec3>& state, vector<vec3>& cont
 	// Compute the stateDot vector given the values of the current state vector and control input vector
 	// TODO: add your code here
 
-	vec3 velocity = state[VEL];
-	vec3 angularV = state[AVEL];
-
-	velocity += deltaT * stateDot[VEL];
-	angularV += deltaT * stateDot[AVEL];
-
-	stateDot[POS] = velocity;
-	stateDot[ORI] = angularV;
-
-	float theta = 0.5 * M_PI - stateDot[ORI][_Y];
-	float cosT = std::cos(theta);
-	float sinT = std::sin(theta);
+	float thetaWrtY = 0.5 * M_PI - stateDot[ORI][_Y];
+	float cosT = std::cos(thetaWrtY);
+	float sinT = std::sin(thetaWrtY);
 	mat3 body2World = mat3(vec3(cosT, 0.0f, sinT), vec3(0.0f, 1.0f, 0.0f), vec3(-sinT, 0.0f, cosT));
-	vec3 forceInWorld = body2World * force;
-	vec3 torqueInworld = body2World * torque;
 
-	vec3 acceleration = forceInWorld / BehaviorController::gMass;
-	vec3 angularAcceleration = torqueInworld / BehaviorController::gInertia;
+	this->m_Vel0 = body2World * state[VEL];
+	this->m_AVelB = state[AVEL];
+	stateDot[POS] = this->m_Vel0;
+	stateDot[ORI] = this->m_AVelB;
 
-	stateDot[VEL] = acceleration;
+	vec3 accelerationB = force / BehaviorController::gMass;
+	vec3 angularAcceleration = torque / BehaviorController::gInertia;
+	stateDot[VEL] = accelerationB;
 	stateDot[AVEL] = angularAcceleration;
 }
 
