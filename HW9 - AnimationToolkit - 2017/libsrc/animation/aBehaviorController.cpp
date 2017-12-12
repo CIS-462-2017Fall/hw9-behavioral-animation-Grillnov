@@ -32,6 +32,7 @@ double BehaviorController::TAvoid = 1000.0;
 double BehaviorController::KSeparation = 12000.0; 
 double BehaviorController::KAlignment = 1.0;  
 double BehaviorController::KCohesion = 1.0;  
+double BehaviorController::RNeighborhood = 500.0;
 
 const double M2_PI = M_PI * 2.0;
 
@@ -171,6 +172,8 @@ void BehaviorController::control(double deltaT)
 
 		// Settling time : 0.25s
 		Kv = 32.0;
+
+		//It might be potentially problematic to set it to critical state
 		double Kp = 256.0;
 		
 		//m_state[ORI] = atan2(dir[_Z], dir[_X]);
@@ -221,6 +224,7 @@ void BehaviorController::computeDynamics(vector<vec3>& state, vector<vec3>& cont
 	// Compute the stateDot vector given the values of the current state vector and control input vector
 	// TODO: add your code here
 
+	// It took me 8 hours to figure out this mysterious bug
 	float thetaWrtY = 0.5 * M_PI - state[ORI][_Y];
 	float cosT = std::cos(thetaWrtY);
 	float sinT = std::sin(thetaWrtY);
