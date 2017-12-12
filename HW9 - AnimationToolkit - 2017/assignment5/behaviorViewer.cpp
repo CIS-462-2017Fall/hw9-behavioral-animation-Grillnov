@@ -69,10 +69,11 @@ void BehaviorViewer::initializeGui()
 		{ SEPARATION, "Separation" },
 		{ COHESION, "Cohesion" },
 		{ FLOCKING, "Flocking" },
-		{ LEADER, "Leader" }
+		{ LEADER, "Leader" },
+		{ AVOIDIMPROVED, "AvoidImproved"}
 	};
 
-	m_TwBehaviorType = TwDefineEnum("BehaviorType", beTypeEV, 11);
+	m_TwBehaviorType = TwDefineEnum("BehaviorType", beTypeEV, 12);
 	TwAddVarCB(m_TwBehaviorBar, "Behavior", m_TwBehaviorType, onSetBehaviorCb, onGetBehaviorCb, this, " ");
 	TwAddVarCB(m_TwBehaviorBar, "Num Agents", TW_TYPE_INT32, onSetNumCharactersCb, onGetNumCharactersCb, this, "");
 	TwAddVarCB(m_TwBehaviorBar, "Num Obstacles", TW_TYPE_INT32, onSetNumObstaclesCb, onGetNumObstaclesCb, this, "");
@@ -99,6 +100,7 @@ void BehaviorViewer::init(int argc, char** argv, int winwidth, int winheight, in
 	reset(m_numCharacters, m_numObstacles);
 	
 	showObstacles(m_BehaviorType == AVOID);
+	showObstacles(m_BehaviorType == AVOIDIMPROVED);
 }
 
 
@@ -159,6 +161,7 @@ void BehaviorViewer::setActiveBehavior(BehaviorType type)
 		m_AgentList[i].getBehaviorController()->setActiveBehaviorType(type);
 
 	showObstacles(m_BehaviorType == AVOID);
+	showObstacles(m_BehaviorType == AVOIDIMPROVED);
 }
 
 void BehaviorViewer::onStep()

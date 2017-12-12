@@ -2,6 +2,4 @@
   IKMain.cpp
   IKViewer.cpp
   Generating Code...
-  IKViewer.vcxproj -> D:\CIS562\Behavior\HW9 - AnimationToolkit - 2017\assignment2c\Debug\A2c-IKViewerd.exe
-  IKViewer.vcxproj -> Debug\A2c-IKViewerd.pdb (Full PDB)
-  已复制         1 个文件。
+LINK : fatal error LNK1181: cannot open input file 'libAssignment5d.lib'

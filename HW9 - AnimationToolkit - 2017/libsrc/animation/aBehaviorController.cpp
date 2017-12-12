@@ -91,6 +91,7 @@ void BehaviorController::createBehaviors(vector<AActor>& agentList, vector<Obsta
 	m_BehaviorList[LEADER] = new Leader(m_pBehaviorTarget, m_AgentList);
 	m_BehaviorList[FLOCKING] = new Flocking(m_pBehaviorTarget, m_AgentList);
 	m_BehaviorList[AVOID] = new Avoid(m_pBehaviorTarget, m_ObstacleList);
+	m_BehaviorList[AVOIDIMPROVED] = new AvoidImproved(m_pBehaviorTarget, m_ObstacleList);
 }
 
 BehaviorController::~BehaviorController()
@@ -273,19 +274,19 @@ void BehaviorController::updateState(float deltaT, int integratorType)
 
 	if (m_VelB.Length() > BehaviorController::gMaxSpeed)
 	{
-
+		//m_VelB = m_VelB.Normalize() * BehaviorController::gMaxSpeed;
 	}
 	if (m_AVelB.Length() > BehaviorController::gMaxAngularSpeed)
 	{
-
+		//m_AVelB = m_AVelB.Normalize() * BehaviorController::gMaxAngularSpeed;
 	}
 	if (m_force.Length() > BehaviorController::gMaxForce)
 	{
-
+		//m_force = m_force.Normalize() * BehaviorController::gMaxForce;
 	}
-	if (m_force.Length() > BehaviorController::gMaxTorque)
+	if (m_torque.Length() > BehaviorController::gMaxTorque)
 	{
-
+		//m_torque = m_torque.Length() * BehaviorController::gMaxTorque;
 	}
 
 
